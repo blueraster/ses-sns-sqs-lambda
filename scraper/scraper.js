@@ -37,15 +37,15 @@ fs.readFile('targetReport.html', 'utf8', (err, data) => {
     els = $('tbody tr')
     els.each(( index, item ) => {
         output.push( {
-                type: $(item.children[0].children[0]).text().trim('') || '',
-                subtype: $(item.children[1].children[0]).text().trim('') || '',
-                detail: $(item.children[2].children[0]).text().trim('') || '',
-                to: $(item.children[3].children[0]).text().trim('') || '',
-                error: $(item.children[4].children[0]).text().trim('') || '',
-                date: $(item.children[5].children[0]).text().trim('') || '',
-                messageId: $(item.children[6].children[0]).text().trim('') || '',
-                from: $(item.children[7].children[0]).text().trim('') || '',
-            } )
+            type: $(item.children[0].children[0]).text().trim('') || '',
+            subtype: $(item.children[1].children[0]).text().trim('') || '',
+            detail: $(item.children[2].children[0]).text().trim('') || '',
+            to: $(item.children[3].children[0]).text().trim('') || '',
+            error: $(item.children[4].children[0]).text().trim('') || '',
+            date: $(item.children[5].children[0]).text().trim('') || '',
+            messageId: $(item.children[6].children[0]).text().trim('') || '',
+            from: $(item.children[7].children[0]).text().trim('') || ''
+        } )
     } )
 
 
