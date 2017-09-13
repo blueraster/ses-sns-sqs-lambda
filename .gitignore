@@ -1,0 +1,3 @@
+/scraper/*.html
+/scraper/*.json
+/scraper/node_modules/*
