@@ -10,9 +10,11 @@ var toddresses = process.env.ToAddr;
 var srcaddr = process.env.SrcAddr;
 var bucket = process.env.BucketName;
 var prefix = process.env.BucketPrefix;
+var removeFromQ = process.env.removeFromQ;
 var qSize = null;
 var content = null;
 var queueParams = {AttributeNames: ["ApproximateNumberOfMessages"], QueueUrl: queueURL};
+var cheerio = require('cheerio')
 
 
 exports.handler = (event, context, callback) => {
@@ -23,23 +25,58 @@ exports.handler = (event, context, callback) => {
         if (prefix == undefined) {
             prefix = "";
         }
-        var param = {
+        var paramForDashboard = {
             Bucket: bucket,
             Key: prefix + date + ".html",
             Body: content,
             ACL: 'public-read',
             ContentType: "text/html"
         };
-        s3.upload(param, function (err, data) {
+        var paramForJson = {
+            Bucket: bucket,
+            Key: prefix + date + ".json",
+            Body: scrapeJSON( content ),
+            ACL: 'public-read',
+            ContentType: "application/json"
+        }
+
+
+        s3.upload(paramForDashboard, function (err, data) {
             if (err) console.log(err, err.stack); // an error occurred
             else console.log(data);
-            url = data.Location;
-            console.log("uploading to s3");
-            if (toddresses) {
-                sendMail();
-            }
+            console.log("uploading html to s3");
             //context.done();
         });
+
+        s3.upload(paramForJson, function (err, data) {
+            if (err) console.log(err, err.stack); // an error occurred
+            else console.log(data);
+            console.log("uploading json to s3");
+            
+            //context.done();
+        });
+    }
+    function scrapeJSON( html ) {
+        var $ = cheerio.load(data),
+        output = [];
+        els = [];
+
+
+        els = $('tbody tr')
+        els.each(( index, item ) => {
+            output.push( {
+                type: $(item.children[0].children[0]).text().trim('') || '',
+                subtype: $(item.children[1].children[0]).text().trim('') || '',
+                detail: $(item.children[2].children[0]).text().trim('') || '',
+                to: $(item.children[3].children[0]).text().trim('') || '',
+                error: $(item.children[4].children[0]).text().trim('') || '',
+                date: $(item.children[5].children[0]).text().trim('') || '',
+                messageId: $(item.children[6].children[0]).text().trim('') || '',
+                from: $(item.children[7].children[0]).text().trim('') || ''
+            })
+        })
+
+        return JSON.stringify(output);
     }
 
     function sendMail() {
@@ -194,7 +231,7 @@ exports.handler = (event, context, callback) => {
 
                     messages.push(i);
 
-                    deleteMessage(message);
+                    if(removeFromQ) deleteMessage(message);
                     //console.log("Array size = " + messages.length + " with queue size = " + queueSize);
 
                     if (messages.length == queueSize) {
